@@ -19,6 +19,24 @@ public class GameOfLife
      */
     public GameOfLife()
     {
-        
+        setUpBoard();
+        printBoard();
+    }
+    
+    public void setUpBoard() {
+        for(int x = 0;x < BOARDWIDTH;x++){
+            for(int y = 0;y < BOARDHEIGHT;y++){
+                gameBoard[x][y] = "=";
+            }
+        }
+    }
+    
+    public void printBoard() {
+        for(int x = 0;x < BOARDWIDTH;x++){
+            for(int y = 0;y < BOARDHEIGHT;y++){
+                System.out.print(gameBoard[x][y]+" ");
+            }
+            System.out.println();
+        }
     }
 }
