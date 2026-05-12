@@ -43,7 +43,7 @@ public class GameOfLife
     public void setUpBoard() {
         for(int x = 0;x < BOARDWIDTH;x++){
             for(int y = 0;y < BOARDHEIGHT;y++){
-                gameBoard[x][y] = "";
+                gameBoard[x][y] = "#";
             }
         }
     }
@@ -51,7 +51,7 @@ public class GameOfLife
     public void printBoardAndMenu() {
         for(int x = 0;x < BOARDWIDTH;x++){
             for(int y = 0;y < BOARDHEIGHT;y++){
-                System.out.print(gameBoard[x][y]);
+                System.out.print(gameBoard[x][y] + "  ");
             }
             System.out.println();
         }
@@ -59,7 +59,7 @@ public class GameOfLife
 
     public String printQuestionAndCleanInput(String question ,int questionType){
         boolean inputSanatized = false;
-        int answer = 1;
+        String answer = "1";
         int answerX = 1;
         int answerY = 2;
         
@@ -68,18 +68,17 @@ public class GameOfLife
             //checks if you entered an integer
             if(questionType != 3){
                 if(keyboard.hasNextInt()){
-                    answer = keyboard.nextInt();
-                    keyboard.nextLine();
+                    answer = keyboard.nextLine();
                     //checks if its 1 or 2
                     if(questionType == 1){
-                        if(answer == 1 || answer == 2){
+                        if(answer.equals("1") || answer.equals("2")){
                             inputSanatized = true;
                         }else{
                             keyboard.nextLine();
                             System.out.println("Please input 1 or 2");
                         }
                     }else{
-                        if(answer > 0){
+                        if(Integer.parseInt(answer) > 0){
                             inputSanatized = true;
                         }else{
                             keyboard.nextLine();
@@ -96,14 +95,49 @@ public class GameOfLife
                 }
             }else{
                 if(keyboard.hasNextInt()){
+                    answer = keyboard.nextLine();
+                    boolean isAnswerY = false;
+                    String answerXString = "";
+                    String answerYString = "";
+                    boolean fail = false;
                     
+                    if(answer.length() > 3){
+                            for(int i = 0;i < answer.length();i++){
+                            if(answer.charAt(i) == ','){
+                                isAnswerY = true;
+                            }else if(isAnswerY){
+                                answerYString += answer.charAt(i);
+                            }else if(!isAnswerY){
+                                answerYString += answer.charAt(i);
+                            }else{
+                                System.out.println("Please use format x,y");
+                                fail = true;
+                            }
+                        }
+                        if(!fail){
+                            if(Integer.parseInt(answerYString) <= BOARDHEIGHT && Integer.parseInt(answerYString) >= 0){
+                                answerY = Integer.parseInt(answerYString);
+                                if(Integer.parseInt(answerXString) <= BOARDWIDTH && Integer.parseInt(answerXString) >= 0){
+                                    answerX = Integer.parseInt(answerXString);
+                                    inputSanatized
+                                    you where working on menu option 2 stuff
+                                }else{
+                                    System.out.println("Please say a position on the board");
+                                }
+                            }else{
+                                System.out.println("Please say a position on the board");
+                            } 
+                        }
+                    }else{
+                        System.out.println("Please use format x,y");
+                    }
                 }
             }
         }
 
         //returns the players answer
         if(questionType != 3){
-            return String.valueOf(answer);
+            return answer;
         }else{
             return answerX + ";" + answerY;
         }
