@@ -28,19 +28,17 @@ public class GameOfLife
         setUpBoard();
 
         while(true){
-            printBoardAndMenu();
+            printBoard();
             if(printQuestionAndCleanInput("Do you want to 1.Move forward some steps or 2.Change the state of a cell?", 1).equals("1")){
                 if(printQuestionAndCleanInput("Do you want to 1.Move forward one step or 2.Move forward multiple step?" ,1).equals("1")){
                     cellCalculation(1);
-                    the goddamn calc scripts aint working!
-                    System.out.println(pastFrame+"banama");
                 }else{
                     String answer = printQuestionAndCleanInput("How many steps?", 2);
                     cellCalculation(Integer.parseInt(answer));
                 }
             }else{
-                    String answer = printQuestionAndCleanInput("What cell? please answer in x,y format", 3);
-                    changeStateOfCell(answer);
+                String answer = printQuestionAndCleanInput("What cell? please answer in x,y format", 3);
+                changeStateOfCell(answer);
             }
         }
     }
@@ -53,9 +51,9 @@ public class GameOfLife
         }
     }
 
-    public void printBoardAndMenu() {
-        for(int x = 0;x < BOARDWIDTH;x++){
-            for(int y = 0;y < BOARDHEIGHT;y++){
+    public void printBoard() {
+        for(int y = 0;y < BOARDHEIGHT;y++){
+            for(int x = 0;x < BOARDWIDTH;x++){
                 System.out.print(gameBoard[x][y] + "  ");
             }
             System.out.println();
@@ -68,7 +66,7 @@ public class GameOfLife
         int answerX = 1;
         int answerY = 2;
         String answerXYString = "";
-        
+
         while(!inputSanatized){
             System.out.println(question);
             //checks if you entered an integer
@@ -80,24 +78,22 @@ public class GameOfLife
                         if(answer.equals("1") || answer.equals("2")){
                             inputSanatized = true;
                         }else{
-                            keyboard.nextLine();
                             System.out.println("Please input 1 or 2");
                         }
                     }else{
                         if(Integer.parseInt(answer) > 0){
                             inputSanatized = true;
                         }else{
-                            keyboard.nextLine();
                             System.out.println("Please input positive number");
                         }
                     }
                 }else{
-                    keyboard.nextLine();
                     if(questionType == 1){
                         System.out.println("Please input 1 or 2");
                     }else{
                         System.out.println("Please input positive number");
                     }
+                    keyboard.nextLine();
                 }
             }else{
                 answerXYString = sanatizeCoords(answer,answerX,answerY,inputSanatized);
@@ -116,14 +112,14 @@ public class GameOfLife
             return answerXYString;
         }
     }
-    
+
     public String sanatizeCoords(String answer,int answerX,int answerY,boolean inputSanatized){
         answer = keyboard.nextLine();
         boolean isAnswerY = false;
         String answerXString = "";
         String answerYString = "";
         boolean fail = false;
-        
+         make it so abc doesnt make it crash when you are changing the state of a cell
         if(answer.length() >= 3){
             for(int i = 0;i < answer.length();i++){
                 if(answer.charAt(i) == ',' && !isAnswerY){
@@ -153,25 +149,25 @@ public class GameOfLife
         }else{
             System.out.println("Please use format x,y");
         }
-        
+
         if(inputSanatized){
             return answerX + ";" + answerY;
         }else{
             return "retry";
         }
     }
-    
+
     public void cellCalculation(int steps){
-        int liveNeighbours = 0;
-        
         for(int x=0;x<BOARDWIDTH;x++){
             for(int y=0;y<BOARDHEIGHT;y++){
                 pastFrame[x][y] = gameBoard[x][y];
             }
         }
-        
+
         for(int x=0;x<BOARDWIDTH;x++){
             for(int y=0;y<BOARDHEIGHT;y++){
+                int liveNeighbours = 0;
+                
                 //checks if they are to close to the left edge
                 if(x > 0){
                     if(pastFrame[x-1][y].equals("#")){liveNeighbours++;};//checks left
@@ -195,6 +191,7 @@ public class GameOfLife
                 //checks if they are to close to the bottom edge
                 if(y < BOARDHEIGHT-1)
                     if(pastFrame[x][y+1].equals("#")){liveNeighbours++;};//checks below
+
                 
                 if(gameBoard[x][y].equals("#")){
                     if(liveNeighbours < 2){
@@ -211,12 +208,12 @@ public class GameOfLife
             }
         }
     }
-    
+
     public void changeStateOfCell(String answer){
         boolean isAnswerY = false;
         String answerXString = "";
         String answerYString = "";
-        
+
         for(int i = 0;i < answer.length();i++){
             if(answer.charAt(i) == ';' && !isAnswerY){
                 isAnswerY = true;
@@ -228,12 +225,12 @@ public class GameOfLife
         }
         int answerY = Integer.parseInt(answerYString);
         int answerX = Integer.parseInt(answerXString);
-            
+
         if(gameBoard[answerX][answerY].equals("#")){
             gameBoard[answerX][answerY] = "=";
         }else{
             gameBoard[answerX][answerY] = "#";
         }
-        }
     }
+}
 
