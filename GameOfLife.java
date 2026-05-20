@@ -119,7 +119,6 @@ public class GameOfLife
         String answerXString = "";
         String answerYString = "";
         boolean fail = false;
-         make it so abc doesnt make it crash when you are changing the state of a cell
         if(answer.length() >= 3){
             for(int i = 0;i < answer.length();i++){
                 if(answer.charAt(i) == ',' && !isAnswerY){
@@ -130,6 +129,10 @@ public class GameOfLife
                     answerXString += answer.charAt(i);
                 }else{
                     System.out.println("Please use format x,y");
+                    fail = true;
+                }
+                if(answer.charAt(i) != ','&&!Character.isDigit(answer.charAt(i))){
+                    System.out.println("Please only input numbers and ,");
                     fail = true;
                 }
             }
