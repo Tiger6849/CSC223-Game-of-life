@@ -5,13 +5,19 @@
  * @author Llew cahalane
  * @version 1 07/05/26
  */
-import java.awt.event.*;
-import java.util.Scanner;
-public class GameOfLife
+import java.awt.event.*; // for events like mouse and keyboard stuff
+import java.util.Scanner; // to read text input
+import javax.swing.*; //for the windows GUI stuff
+import java.awt.*; //also for GUI
+import java.awt.geom.*; // for lines
+import javax.swing.JButton;//for buttons
+public class GameOfLife extends JFrame implements ActionListener,MouseListener
 {
     //finals
     final int BOARDWIDTH = 20; 
     final int BOARDHEIGHT = 20;
+
+    final int CELLWIDTH = 20;
 
     //board array
     String[][] gameBoard = new String[BOARDWIDTH][BOARDHEIGHT];
@@ -19,6 +25,11 @@ public class GameOfLife
 
     //scanner for input
     Scanner keyboard = new Scanner(System.in);
+    
+    //menu
+    JMenuBar menuBar;
+    JMenu menu;
+    JMenuItem menuItem;
     /**
      * Constructor for objects of class GameOfLife
      */
@@ -27,8 +38,37 @@ public class GameOfLife
         //set up
         setUpBoard();
 
+        //make window
+        setTitle("Connect four");
+        this.getContentPane().setPreferredSize(new Dimension(500,500));
+        this.getContentPane().setLayout(null);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.pack();
+        
+        //detects mouse clicks
+        addMouseListener(this);
+        
+        //make menu  bar
+        menuBar = new JMenuBar();
+        this.setJMenuBar(menuBar);
+        
+        //add menus to the menu bar
+        menu = new JMenu("Time control");
+        menuBar.add(menu);
+        
+        menuItem = new JMenuItem("Move forward one frame");
+        menuItem.addActionListener(this);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke('s'));
+        menu.add(menuItem);
+        
+        add menu stuff!!! you were copying off menuWithShortcuts in the GUI project
+    
+        //packs everything together
+        this.setVisible(true); 
+
         while(true){
             printBoard();
+            //repaint();
             if(printQuestionAndCleanInput("Do you want to 1.Move forward some steps or 2.Change the state of a cell?", 1).equals("1")){
                 if(printQuestionAndCleanInput("Do you want to 1.Move forward one step or 2.Move forward multiple step?" ,1).equals("1")){
                     cellCalculation(1);
@@ -170,7 +210,7 @@ public class GameOfLife
         for(int x=0;x<BOARDWIDTH;x++){
             for(int y=0;y<BOARDHEIGHT;y++){
                 int liveNeighbours = 0;
-                
+
                 //checks if they are to close to the left edge
                 if(x > 0){
                     if(pastFrame[x-1][y].equals("#")){liveNeighbours++;};//checks left
@@ -195,7 +235,6 @@ public class GameOfLife
                 if(y < BOARDHEIGHT-1)
                     if(pastFrame[x][y+1].equals("#")){liveNeighbours++;};//checks below
 
-                
                 if(gameBoard[x][y].equals("#")){
                     if(liveNeighbours < 2){
                         gameBoard[x][y] = "="; //underpopulation
@@ -234,6 +273,66 @@ public class GameOfLife
         }else{
             gameBoard[answerX][answerY] = "#";
         }
+    }
+
+    public void paint(Graphics g){
+        super.paint(g);
+        Graphics2D g2 = (Graphics2D) g;
+
+        //draw cells
+        for(int y = 0;y < BOARDHEIGHT;y++){
+            for(int x = 0;x < BOARDWIDTH;x++){
+                if(gameBoard[x][y] == "#"){
+                    g2.setColor(Color.WHITE);
+                }else if(gameBoard[x][y] == "="){
+                    g2.setColor(Color.BLACK);
+                }
+
+                g2.fillRect(CELLWIDTH * (x + 2),CELLWIDTH * (y + 2),CELLWIDTH,CELLWIDTH);
+            }
+        }
+
+        g2.setColor(Color.GRAY);
+        //draw horizontal grid lines
+        for(int x=0;x<BOARDHEIGHT + 1;x++){
+            g2.fillRect(CELLWIDTH * 2,(CELLWIDTH * x) + CELLWIDTH * 2,(CELLWIDTH * BOARDWIDTH),2);
+        }
+
+        //draw vertical grid lines
+        for(int y=0;y<BOARDWIDTH + 1;y++){
+            g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 2,2,(CELLWIDTH * BOARDHEIGHT));
+        }
+    }
+
+    public void mouseExited(MouseEvent e) {}
+
+    public void mouseEntered(MouseEvent e) {}
+
+    public void mouseReleased(MouseEvent e) {}
+
+    public void mousePressed(MouseEvent e) {}
+
+    public void mouseClicked(MouseEvent e) {
+        int mouseX = e.getX();
+        int mouseY = e.getY();
+
+        for(int y = 0;y < BOARDHEIGHT;y++){
+            for(int x = 0;x < BOARDWIDTH;x++){
+                int cellX = CELLWIDTH * (x + 2);
+                int cellY = CELLWIDTH * (y + 2);
+                int cellXAndWidth = CELLWIDTH * (x + 2) + CELLWIDTH;
+                int cellYAndHeight = CELLWIDTH * (y + 2) + CELLWIDTH;
+
+                if(mouseX > cellX && mouseX < cellXAndWidth && mouseY > cellY && mouseY < cellYAndHeight){
+                    if(gameBoard[x][y].equals("=")){
+                        gameBoard[x][y] = "#";
+                    }else{
+                        gameBoard[x][y] = "=";
+                    }
+                }
+            }
+        }
+        repaint();
     }
 }
 
