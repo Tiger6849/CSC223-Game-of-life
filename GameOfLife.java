@@ -1,9 +1,9 @@
 
 /**
- * GameOf Life is a game based off conways game of life.
+ * GameOfLife is a game based off conways game of life.
  *
  * @author Llew cahalane
- * @version 1 07/05/26
+ * 
  */
 import java.awt.event.*; // for events like mouse and keyboard stuff
 import java.util.Scanner; // to read text input
@@ -25,7 +25,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
     //scanner for input
     Scanner keyboard = new Scanner(System.in);
-    
+
     //menu
     JMenuBar menuBar;
     JMenu menu;
@@ -38,37 +38,11 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         //set up
         setUpBoard();
 
-        //make window
-        setTitle("Connect four");
-        this.getContentPane().setPreferredSize(new Dimension(500,500));
-        this.getContentPane().setLayout(null);
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.pack();
-        
-        //detects mouse clicks
-        addMouseListener(this);
-        
-        //make menu  bar
-        menuBar = new JMenuBar();
-        this.setJMenuBar(menuBar);
-        
-        //add menus to the menu bar
-        menu = new JMenu("Time control");
-        menuBar.add(menu);
-        
-        menuItem = new JMenuItem("Move forward one frame");
-        menuItem.addActionListener(this);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke('s'));
-        menu.add(menuItem);
-        
-        add menu stuff!!! you were copying off menuWithShortcuts in the GUI project
-    
-        //packs everything together
-        this.setVisible(true); 
+        setUpWindow();
 
-        while(true){
-            printBoard();
-            //repaint();
+        //(true){
+            /*printBoard();
+            repaint();
             if(printQuestionAndCleanInput("Do you want to 1.Move forward some steps or 2.Change the state of a cell?", 1).equals("1")){
                 if(printQuestionAndCleanInput("Do you want to 1.Move forward one step or 2.Move forward multiple step?" ,1).equals("1")){
                     cellCalculation(1);
@@ -79,8 +53,8 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             }else{
                 String answer = printQuestionAndCleanInput("What cell? please answer in x,y format", 3);
                 changeStateOfCell(answer);
-            }
-        }
+            }*/
+        //}
     }
 
     public void setUpBoard() {
@@ -102,26 +76,34 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
     public String printQuestionAndCleanInput(String question ,int questionType){
         boolean inputSanatized = false;
-        String answer = "1";
+        boolean isNumber = false;
         int answerX = 1;
         int answerY = 2;
+        String answer = "1";
         String answerXYString = "";
 
         while(!inputSanatized){
-            System.out.println(question);
+            InD questionBox = new InD(question);
+            questionBox.setLocationRelativeTo(this);
+            questionBox.setVisible(true);
+            String reply=questionBox.getText();
             //checks if you entered an integer
+            
+            for(int i = 0;i < reply.length();i++){
+                if(Character.isDigit(reply.charAt(i))){
+                    isNumber = true;
+                }
+            }
             if(questionType != 3){
-                if(keyboard.hasNextInt()){
-                    answer = keyboard.nextLine();
-                    //checks if its 1 or 2
+                if(isNumber){
                     if(questionType == 1){
-                        if(answer.equals("1") || answer.equals("2")){
+                        if(reply.equals("1") || reply.equals("2")){
                             inputSanatized = true;
                         }else{
                             System.out.println("Please input 1 or 2");
                         }
                     }else{
-                        if(Integer.parseInt(answer) > 0){
+                        if(Integer.parseInt(reply) > 0){
                             inputSanatized = true;
                         }else{
                             System.out.println("Please input positive number");
@@ -139,7 +121,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
                 answerXYString = sanatizeCoords(answer,answerX,answerY,inputSanatized);
                 while(answerXYString.equals("retry")){
                     System.out.println(question);
-                    answerXYString = sanatizeCoords(answer,answerX,answerY,inputSanatized);
+                    answerXYString = sanatizeCoords(reply,answerX,answerY,inputSanatized);
                 }
                 inputSanatized = true;
             }
@@ -288,22 +270,23 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
                     g2.setColor(Color.BLACK);
                 }
 
-                g2.fillRect(CELLWIDTH * (x + 2),CELLWIDTH * (y + 2),CELLWIDTH,CELLWIDTH);
+                g2.fillRect(CELLWIDTH * (x + 2),CELLWIDTH * (y + 5),CELLWIDTH,CELLWIDTH);
             }
         }
 
         g2.setColor(Color.GRAY);
         //draw horizontal grid lines
         for(int x=0;x<BOARDHEIGHT + 1;x++){
-            g2.fillRect(CELLWIDTH * 2,(CELLWIDTH * x) + CELLWIDTH * 2,(CELLWIDTH * BOARDWIDTH),2);
+            g2.fillRect(CELLWIDTH * 2,(CELLWIDTH * x) + CELLWIDTH * 5,(CELLWIDTH * BOARDWIDTH),2);
         }
 
         //draw vertical grid lines
         for(int y=0;y<BOARDWIDTH + 1;y++){
-            g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 2,2,(CELLWIDTH * BOARDHEIGHT));
+            g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 5,2,(CELLWIDTH * BOARDHEIGHT));
         }
     }
 
+    //these are here so there arent any errors
     public void mouseExited(MouseEvent e) {}
 
     public void mouseEntered(MouseEvent e) {}
@@ -312,6 +295,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
     public void mousePressed(MouseEvent e) {}
 
+    // to detect mouse clicks
     public void mouseClicked(MouseEvent e) {
         int mouseX = e.getX();
         int mouseY = e.getY();
@@ -319,9 +303,9 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         for(int y = 0;y < BOARDHEIGHT;y++){
             for(int x = 0;x < BOARDWIDTH;x++){
                 int cellX = CELLWIDTH * (x + 2);
-                int cellY = CELLWIDTH * (y + 2);
+                int cellY = CELLWIDTH * (y + 5);
                 int cellXAndWidth = CELLWIDTH * (x + 2) + CELLWIDTH;
-                int cellYAndHeight = CELLWIDTH * (y + 2) + CELLWIDTH;
+                int cellYAndHeight = CELLWIDTH * (y + 5) + CELLWIDTH;
 
                 if(mouseX > cellX && mouseX < cellXAndWidth && mouseY > cellY && mouseY < cellYAndHeight){
                     if(gameBoard[x][y].equals("=")){
@@ -333,6 +317,55 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             }
         }
         repaint();
+    }
+
+    //for detecting menu interactions
+    public void actionPerformed(ActionEvent e){
+        System.out.println(e.getActionCommand());
+        switch(e.getActionCommand()){
+            case "Move forward one frame":
+                cellCalculation(1);
+                repaint();
+                break;
+            case "Move forward multiple frames":
+                cellCalculation(Integer.parseInt(printQuestionAndCleanInput("How many frames?",2)));
+                repaint();
+        }
+    }
+
+    public void setUpWindow(){
+        //make window
+        setTitle("Connect four");
+        this.getContentPane().setPreferredSize(new Dimension(500,500));
+        this.getContentPane().setLayout(null);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        //detects mouse clicks
+        addMouseListener(this);
+
+        //make menu  bar
+        menuBar = new JMenuBar();
+        this.setJMenuBar(menuBar);
+
+        //add menus to the menu bar
+        menu = new JMenu("Time control");
+        menuBar.add(menu);
+
+        menuItem = new JMenuItem("Move forward one frame");
+        menuItem.addActionListener(this);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke('1'));
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("Move forward multiple frames");
+        menuItem.addActionListener(this);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
+        menu.add(menuItem);
+
+        //put it onto the screen
+        this.pack();
+        this.toFront();
+        this.setVisible(true); 
+
     }
 }
 
