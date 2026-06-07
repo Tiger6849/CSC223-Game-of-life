@@ -11,13 +11,16 @@ import javax.swing.*; //for the windows GUI stuff
 import java.awt.*; //also for GUI
 import java.awt.geom.*; // for lines
 import javax.swing.JButton;//for buttons
+import java.io.File; //to make files
+import java.io.IOException; // to handle file errors
+import java.io.FileWriter; // to write to files
 public class GameOfLife extends JFrame implements ActionListener,MouseListener
 {
     //finals
-    final int BOARDWIDTH = 20; 
-    final int BOARDHEIGHT = 20;
+    final int BOARDWIDTH = 70; 
+    final int BOARDHEIGHT = 70;
 
-    final int CELLWIDTH = 20;
+    final int CELLWIDTH = 15;
 
     //board array
     String[][] gameBoard = new String[BOARDWIDTH][BOARDHEIGHT];
@@ -25,6 +28,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
     //scanner for input
     Scanner keyboard = new Scanner(System.in);
+    
 
     //menu
     JMenuBar menuBar;
@@ -39,28 +43,12 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         setUpBoard();
 
         setUpWindow();
-
-        //(true){
-            /*printBoard();
-            repaint();
-            if(printQuestionAndCleanInput("Do you want to 1.Move forward some steps or 2.Change the state of a cell?", 1).equals("1")){
-                if(printQuestionAndCleanInput("Do you want to 1.Move forward one step or 2.Move forward multiple step?" ,1).equals("1")){
-                    cellCalculation(1);
-                }else{
-                    String answer = printQuestionAndCleanInput("How many steps?", 2);
-                    cellCalculation(Integer.parseInt(answer));
-                }
-            }else{
-                String answer = printQuestionAndCleanInput("What cell? please answer in x,y format", 3);
-                changeStateOfCell(answer);
-            }*/
-        //}
     }
 
     public void setUpBoard() {
         for(int x = 0;x < BOARDWIDTH;x++){
             for(int y = 0;y < BOARDHEIGHT;y++){
-                gameBoard[x][y] = "#";
+                gameBoard[x][y] = "=";
             }
         }
     }
@@ -87,8 +75,8 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             questionBox.setLocationRelativeTo(this);
             questionBox.setVisible(true);
             String reply=questionBox.getText();
+
             //checks if you entered an integer
-            
             for(int i = 0;i < reply.length();i++){
                 if(Character.isDigit(reply.charAt(i))){
                     isNumber = true;
@@ -115,7 +103,6 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
                     }else{
                         System.out.println("Please input positive number");
                     }
-                    keyboard.nextLine();
                 }
             }else{
                 answerXYString = sanatizeCoords(answer,answerX,answerY,inputSanatized);
@@ -259,6 +246,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
     public void paint(Graphics g){
         super.paint(g);
+
         Graphics2D g2 = (Graphics2D) g;
 
         //draw cells
@@ -277,12 +265,12 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         g2.setColor(Color.GRAY);
         //draw horizontal grid lines
         for(int x=0;x<BOARDHEIGHT + 1;x++){
-            g2.fillRect(CELLWIDTH * 2,(CELLWIDTH * x) + CELLWIDTH * 5,(CELLWIDTH * BOARDWIDTH),2);
+            g2.fillRect(CELLWIDTH * 2,(CELLWIDTH * x) + CELLWIDTH * 5,(CELLWIDTH * BOARDWIDTH),1);
         }
 
         //draw vertical grid lines
         for(int y=0;y<BOARDWIDTH + 1;y++){
-            g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 5,2,(CELLWIDTH * BOARDHEIGHT));
+            g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 5,1,(CELLWIDTH * BOARDHEIGHT));
         }
     }
 
@@ -330,13 +318,22 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             case "Move forward multiple frames":
                 cellCalculation(Integer.parseInt(printQuestionAndCleanInput("How many frames?",2)));
                 repaint();
+                break;
+            case "Quit":
+                System.exit(0);
+                break;
+            case "Save to file":
+                writeSave();
+                break;
+            case "Create file for save":
+                createSaveFile();
         }
     }
 
     public void setUpWindow(){
         //make window
         setTitle("Connect four");
-        this.getContentPane().setPreferredSize(new Dimension(500,500));
+        this.getContentPane().setPreferredSize(new Dimension(BOARDWIDTH* CELLWIDTH + 100,BOARDHEIGHT * CELLWIDTH + 100));
         this.getContentPane().setLayout(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -361,11 +358,61 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
         menu.add(menuItem);
 
+        menu = new JMenu("Extras");
+        menuBar.add(menu);
+
+        menuItem = new JMenuItem("Quit");
+        menuItem.addActionListener(this);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("Save to file");
+        menuItem.addActionListener(this);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
+        menu.add(menuItem);
+        
+        menuItem = new JMenuItem("Create file for save");
+        menuItem.addActionListener(this);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
+        menu.add(menuItem);
+
         //put it onto the screen
         this.pack();
         this.toFront();
         this.setVisible(true); 
 
+    }
+
+    public void createSaveFile(){
+        //makes a file. the try is to catch if there is an error
+        try {
+            //creates the file object
+            File myObj = new File("GameOfLifeSave.txt");
+            //checks if the file already exists
+            if(myObj.createNewFile()) {
+                System.out.println("File saved");
+            } else{
+                System.out.println("File alrerady exists");
+            }
+            //catches the errors
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace(); //print error details
+        }
+        
+    }
+    
+    public void writeSave() {
+        for(int y = 0;y < BOARDHEIGHT;y++){
+            for(int x = 0;x < BOARDWIDTH;x++){
+                add a string here that you will put in the myWriter write thing below. also use this link: https://www.w3schools.com/java/java_files_write.asp
+            }
+        }
+        
+        try {
+            FileWriter myWriter = new FileWriter("GameOfLifeSave.txt");
+            myWriter.write("
+        }
     }
 }
 
