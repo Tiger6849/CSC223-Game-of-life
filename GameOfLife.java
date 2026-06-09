@@ -14,6 +14,7 @@ import javax.swing.JButton;//for buttons
 import java.io.File; //to make files
 import java.io.IOException; // to handle file errors
 import java.io.FileWriter; // to write to files
+import java.io.FileNotFoundException; // to handle file reading errors
 public class GameOfLife extends JFrame implements ActionListener,MouseListener
 {
     //finals
@@ -28,7 +29,6 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
     //scanner for input
     Scanner keyboard = new Scanner(System.in);
-    
 
     //menu
     JMenuBar menuBar;
@@ -112,8 +112,11 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
                 }
                 inputSanatized = true;
             }
+            if(inputSanatized)
+                answer = reply;
         }
 
+        System.out.println(answer);
         //returns the players answer
         if(questionType != 3){
             return answer;
@@ -170,51 +173,53 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     }
 
     public void cellCalculation(int steps){
-        for(int x=0;x<BOARDWIDTH;x++){
-            for(int y=0;y<BOARDHEIGHT;y++){
-                pastFrame[x][y] = gameBoard[x][y];
+        for(int i = 0;i<steps;i++){
+            for(int x=0;x<BOARDWIDTH;x++){
+                for(int y=0;y<BOARDHEIGHT;y++){
+                    pastFrame[x][y] = gameBoard[x][y];
+                }
             }
-        }
 
-        for(int x=0;x<BOARDWIDTH;x++){
-            for(int y=0;y<BOARDHEIGHT;y++){
-                int liveNeighbours = 0;
+            for(int x=0;x<BOARDWIDTH;x++){
+                for(int y=0;y<BOARDHEIGHT;y++){
+                    int liveNeighbours = 0;
 
-                //checks if they are to close to the left edge
-                if(x > 0){
-                    if(pastFrame[x-1][y].equals("#")){liveNeighbours++;};//checks left
-                    if(y > 0)
-                        if(pastFrame[x-1][y-1].equals("#")){liveNeighbours++;};//checks top left
-                    if(y < BOARDHEIGHT-1)
-                        if(pastFrame[x-1][y+1].equals("#")){liveNeighbours++;};//checks bottom left
-                }
-                //checks if they are to close to the top edge
-                if(y > 0){
-                    if(pastFrame[x][y-1].equals("#")){liveNeighbours++;};//checks above
-                    if(x < BOARDWIDTH-1)
-                        if(pastFrame[x+1][y-1].equals("#")){liveNeighbours++;};//checks top right
-                }
-                //checks if they are to close to the right edge
-                if(x < BOARDWIDTH-1){
-                    if(pastFrame[x+1][y].equals("#")){liveNeighbours++;};//checks right
-                    if(y < BOARDHEIGHT-1)
-                        if(pastFrame[x+1][y+1].equals("#")){liveNeighbours++;};//checks bottom right
-                }
-                //checks if they are to close to the bottom edge
-                if(y < BOARDHEIGHT-1)
-                    if(pastFrame[x][y+1].equals("#")){liveNeighbours++;};//checks below
-
-                if(gameBoard[x][y].equals("#")){
-                    if(liveNeighbours < 2){
-                        gameBoard[x][y] = "="; //underpopulation
+                    //checks if they are to close to the left edge
+                    if(x > 0){
+                        if(pastFrame[x-1][y].equals("#")){liveNeighbours++;};//checks left
+                        if(y > 0)
+                            if(pastFrame[x-1][y-1].equals("#")){liveNeighbours++;};//checks top left
+                        if(y < BOARDHEIGHT-1)
+                            if(pastFrame[x-1][y+1].equals("#")){liveNeighbours++;};//checks bottom left
                     }
-                    if(liveNeighbours > 3){
-                        gameBoard[x][y] = "="; //overpopulation
+                    //checks if they are to close to the top edge
+                    if(y > 0){
+                        if(pastFrame[x][y-1].equals("#")){liveNeighbours++;};//checks above
+                        if(x < BOARDWIDTH-1)
+                            if(pastFrame[x+1][y-1].equals("#")){liveNeighbours++;};//checks top right
                     }
-                }else{
-                    if(liveNeighbours == 3){
-                        gameBoard[x][y] = "#"; //reproduction
-                    }   
+                    //checks if they are to close to the right edge
+                    if(x < BOARDWIDTH-1){
+                        if(pastFrame[x+1][y].equals("#")){liveNeighbours++;};//checks right
+                        if(y < BOARDHEIGHT-1)
+                            if(pastFrame[x+1][y+1].equals("#")){liveNeighbours++;};//checks bottom right
+                    }
+                    //checks if they are to close to the bottom edge
+                    if(y < BOARDHEIGHT-1)
+                        if(pastFrame[x][y+1].equals("#")){liveNeighbours++;};//checks below
+
+                    if(gameBoard[x][y].equals("#")){
+                        if(liveNeighbours < 2){
+                            gameBoard[x][y] = "="; //underpopulation
+                        }
+                        if(liveNeighbours > 3){
+                            gameBoard[x][y] = "="; //overpopulation
+                        }
+                    }else{
+                        if(liveNeighbours == 3){
+                            gameBoard[x][y] = "#"; //reproduction
+                        }   
+                    }
                 }
             }
         }
@@ -327,6 +332,11 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
                 break;
             case "Create file for save":
                 createSaveFile();
+                break;
+            case "Load save":
+                loadSave();
+                repaint();
+                break;
         }
     }
 
@@ -363,17 +373,18 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
         menuItem = new JMenuItem("Quit");
         menuItem.addActionListener(this);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
         menu.add(menuItem);
 
         menuItem = new JMenuItem("Save to file");
         menuItem.addActionListener(this);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
         menu.add(menuItem);
-        
+
         menuItem = new JMenuItem("Create file for save");
         menuItem.addActionListener(this);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("Load save");
+        menuItem.addActionListener(this);
         menu.add(menuItem);
 
         //put it onto the screen
@@ -392,26 +403,71 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             if(myObj.createNewFile()) {
                 System.out.println("File saved");
             } else{
-                System.out.println("File alrerady exists");
+                System.out.println("File already exists");
             }
             //catches the errors
         } catch (IOException e) {
-            System.out.println("An error occurred.");
+            System.out.println("An error occurred. (IOException)");
             e.printStackTrace(); //print error details
         }
-        
+
     }
-    
+you were doing save stuff. make sure to update testing doc
     public void writeSave() {
-        for(int y = 0;y < BOARDHEIGHT;y++){
-            for(int x = 0;x < BOARDWIDTH;x++){
-                add a string here that you will put in the myWriter write thing below. also use this link: https://www.w3schools.com/java/java_files_write.asp
+        String saveString = "";
+        for(int x = 0;x < BOARDWIDTH;x++){
+            for(int y = 0;y < BOARDHEIGHT;y++){
+                if(gameBoard[x][y].equals("#")){
+                    saveString += "1";
+                }else if(gameBoard[x][y].equals("=")){
+                    saveString += "0";
+                }
+                if(y == BOARDWIDTH-1){
+                    saveString += ";";
+                }
             }
         }
-        
+
         try {
             FileWriter myWriter = new FileWriter("GameOfLifeSave.txt");
-            myWriter.write("
+            myWriter.write(saveString);
+            myWriter.close();
+            System.out.println("File saved");
+        } catch(IOException e) {
+            System.out.println("An error occurred.(IOException)");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadSave() {
+        File myObj = new File("GameOfLifeSave.txt");
+        try (Scanner fileReader = new Scanner(myObj)){
+            while (fileReader.hasNextLine()) {
+                String data = fileReader.nextLine();
+                int x = 0;
+                int y = 0;
+                for(int i = 0;i < data.length();i++){
+                    switch(data.charAt(i)){
+                        case '1':
+                            gameBoard[x][y] = "#";
+                            System.out.println(data.charAt(i)+" "+data.length());;
+                            y++;
+                            break;
+                        case '0':
+                            gameBoard[x][y] = "=";
+                            System.out.println(data.charAt(i)+" "+data.length());
+                            y++;
+                            break;
+                        case ';':
+                            x++;
+                            y = 0;
+                            System.out.println(data.charAt(i)+" "+data.length());
+                    }
+                }
+            }
+        }catch (FileNotFoundException e){
+            System.out.println("An error occured (FileNotFoundException)");
+            e.printStackTrace();
         }
     }
 }
