@@ -15,6 +15,7 @@ import java.io.File; //to make files
 import java.io.IOException; // to handle file errors
 import java.io.FileWriter; // to write to files
 import java.io.FileNotFoundException; // to handle file reading errors
+import java.util.concurrent.TimeUnit;// for a sleep command
 public class GameOfLife extends JFrame implements ActionListener,MouseListener
 {
     //finals
@@ -30,10 +31,14 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     //scanner for input
     Scanner keyboard = new Scanner(System.in);
 
-    //menu
+    //menu & button setup
     JMenuBar menuBar;
     JMenu menu;
     JMenuItem menuItem;
+    JButton myButton;
+    
+    //variables
+    boolean playing;
     /**
      * Constructor for objects of class GameOfLife
      */
@@ -41,8 +46,11 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     {
         //set up
         setUpBoard();
-
         setUpWindow();
+        
+        while(true){
+            playControl(false);
+        }
     }
 
     public void setUpBoard() {
@@ -50,15 +58,6 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             for(int y = 0;y < BOARDHEIGHT;y++){
                 gameBoard[x][y] = "=";
             }
-        }
-    }
-
-    public void printBoard() {
-        for(int y = 0;y < BOARDHEIGHT;y++){
-            for(int x = 0;x < BOARDWIDTH;x++){
-                System.out.print(gameBoard[x][y] + "  ");
-            }
-            System.out.println();
         }
     }
 
@@ -225,30 +224,6 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         }
     }
 
-    public void changeStateOfCell(String answer){
-        boolean isAnswerY = false;
-        String answerXString = "";
-        String answerYString = "";
-
-        for(int i = 0;i < answer.length();i++){
-            if(answer.charAt(i) == ';' && !isAnswerY){
-                isAnswerY = true;
-            }else if(isAnswerY){
-                answerYString += answer.charAt(i);
-            }else if(!isAnswerY){
-                answerXString += answer.charAt(i);
-            }
-        }
-        int answerY = Integer.parseInt(answerYString);
-        int answerX = Integer.parseInt(answerXString);
-
-        if(gameBoard[answerX][answerY].equals("#")){
-            gameBoard[answerX][answerY] = "=";
-        }else{
-            gameBoard[answerX][answerY] = "#";
-        }
-    }
-
     public void paint(Graphics g){
         super.paint(g);
 
@@ -260,14 +235,14 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
                 if(gameBoard[x][y] == "#"){
                     g2.setColor(Color.WHITE);
                 }else if(gameBoard[x][y] == "="){
-                    g2.setColor(Color.BLACK);
+                    g2.setColor(Color.GRAY);
                 }
 
                 g2.fillRect(CELLWIDTH * (x + 2),CELLWIDTH * (y + 5),CELLWIDTH,CELLWIDTH);
             }
         }
 
-        g2.setColor(Color.GRAY);
+        g2.setColor(Color.LIGHT_GRAY);
         //draw horizontal grid lines
         for(int x=0;x<BOARDHEIGHT + 1;x++){
             g2.fillRect(CELLWIDTH * 2,(CELLWIDTH * x) + CELLWIDTH * 5,(CELLWIDTH * BOARDWIDTH),1);
@@ -314,13 +289,12 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
     //for detecting menu interactions
     public void actionPerformed(ActionEvent e){
-        System.out.println(e.getActionCommand());
         switch(e.getActionCommand()){
-            case "Move forward one frame":
+            case "Move forward one frame","Next frame":
                 cellCalculation(1);
                 repaint();
                 break;
-            case "Move forward multiple frames":
+            case "Move forward multiple frames","Move multiple frames":
                 cellCalculation(Integer.parseInt(printQuestionAndCleanInput("How many frames?",2)));
                 repaint();
                 break;
@@ -336,6 +310,9 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             case "Load save":
                 loadSave();
                 repaint();
+                break;
+            case "Play and pause":
+                playControl(true);
                 break;
         }
     }
@@ -386,6 +363,28 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         menuItem = new JMenuItem("Load save");
         menuItem.addActionListener(this);
         menu.add(menuItem);
+        
+        //buttons
+        myButton = new JButton();
+        myButton.setText("Next frame");
+        myButton.setBounds (100,1100,120,20);
+        myButton.addActionListener(this);
+        myButton.setFocusable(false);
+        this.add(myButton);
+        
+        myButton = new JButton();
+        myButton.setText("Move multiple frames");
+        myButton.setBounds (100,1130,180,20);
+        myButton.addActionListener(this);
+        myButton.setFocusable(false);
+        this.add(myButton);
+        
+        myButton = new JButton();
+        myButton.setText("Play and pause");
+        myButton.setBounds (100,1140,170,20);
+        myButton.addActionListener(this);
+        myButton.setFocusable(false);
+        this.add(myButton);
 
         //put it onto the screen
         this.pack();
@@ -412,7 +411,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         }
 
     }
-you were doing save stuff. make sure to update testing doc
+    //you were doing save stuff. make sure to update testing doc
     public void writeSave() {
         String saveString = "";
         for(int x = 0;x < BOARDWIDTH;x++){
@@ -468,6 +467,28 @@ you were doing save stuff. make sure to update testing doc
         }catch (FileNotFoundException e){
             System.out.println("An error occured (FileNotFoundException)");
             e.printStackTrace();
+        }
+    }
+    fix the crazy flashing and that the pla and paus only works when the system.out.println ids there
+    public void playControl(boolean changing){
+        System.out.println(playing);
+        if(changing){
+            if(playing){
+                playing = false;
+            }else{
+                playing = true;
+            }
+        }
+        
+        if(playing){
+            cellCalculation(1);
+            repaint();
+            try{
+                TimeUnit.MILLISECONDS.sleep(50);
+            }catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread was interrupted while sleeping.");
+            }
         }
     }
 }
