@@ -16,6 +16,7 @@ import java.io.IOException; // to handle file errors
 import java.io.FileWriter; // to write to files
 import java.io.FileNotFoundException; // to handle file reading errors
 import java.util.concurrent.TimeUnit;// for a sleep command
+import java.awt.image.BufferedImage; //for buffering
 public class GameOfLife extends JFrame implements ActionListener,MouseListener
 {
     //finals
@@ -36,9 +37,9 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     JMenu menu;
     JMenuItem menuItem;
     JButton myButton;
-    
+
     //variables
-    boolean playing;
+    boolean playing = false;
     /**
      * Constructor for objects of class GameOfLife
      */
@@ -47,10 +48,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         //set up
         setUpBoard();
         setUpWindow();
-        
-        while(true){
-            playControl(false);
-        }
+        playControl(false);
     }
 
     public void setUpBoard() {
@@ -224,11 +222,16 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         }
     }
 
+    //so it flickers less
+    private BufferedImage offScreenImage;
     public void paint(Graphics g){
         super.paint(g);
 
-        Graphics2D g2 = (Graphics2D) g;
-
+        if (offScreenImage == null)
+            offScreenImage = new BufferedImage(getWidth(),getHeight(),BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = (Graphics2D) offScreenImage.getGraphics();
+        
+        //Graphics2D g2 = (Graphics2D) g;
         //draw cells
         for(int y = 0;y < BOARDHEIGHT;y++){
             for(int x = 0;x < BOARDWIDTH;x++){
@@ -252,6 +255,9 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         for(int y=0;y<BOARDWIDTH + 1;y++){
             g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 5,1,(CELLWIDTH * BOARDHEIGHT));
         }
+        
+        
+        g.drawImage(offScreenImage,0,0,null);
     }
 
     //these are here so there arent any errors
@@ -363,7 +369,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         menuItem = new JMenuItem("Load save");
         menuItem.addActionListener(this);
         menu.add(menuItem);
-        
+
         //buttons
         myButton = new JButton();
         myButton.setText("Next frame");
@@ -371,17 +377,17 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         myButton.addActionListener(this);
         myButton.setFocusable(false);
         this.add(myButton);
-        
+
         myButton = new JButton();
         myButton.setText("Move multiple frames");
-        myButton.setBounds (100,1130,180,20);
+        myButton.setBounds (240,1100,170,20);
         myButton.addActionListener(this);
         myButton.setFocusable(false);
         this.add(myButton);
-        
+
         myButton = new JButton();
         myButton.setText("Play and pause");
-        myButton.setBounds (100,1140,170,20);
+        myButton.setBounds (430,1100,140,20);
         myButton.addActionListener(this);
         myButton.setFocusable(false);
         this.add(myButton);
@@ -469,25 +475,28 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             e.printStackTrace();
         }
     }
-    fix the crazy flashing and that the pla and paus only works when the system.out.println ids there
+
+    //controls wether its going automatically or not
     public void playControl(boolean changing){
-        System.out.println(playing);
         if(changing){
             if(playing){
                 playing = false;
             }else{
                 playing = true;
             }
-        }
-        
-        if(playing){
-            cellCalculation(1);
-            repaint();
-            try{
-                TimeUnit.MILLISECONDS.sleep(50);
-            }catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Thread was interrupted while sleeping.");
+        }else{
+            while(true){
+                try{
+                    TimeUnit.MILLISECONDS.sleep(700);
+                }catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.out.println("Thread was interrupted while sleeping.");
+                }
+
+                if(playing){
+                    cellCalculation(1);
+                    repaint();
+                }
             }
         }
     }
