@@ -17,6 +17,7 @@ import java.io.FileWriter; // to write to files
 import java.io.FileNotFoundException; // to handle file reading errors
 import java.util.concurrent.TimeUnit;// for a sleep command
 import java.awt.image.BufferedImage; //for buffering
+import javax.swing.ImageIcon; // for the images on buttons
 public class GameOfLife extends JFrame implements ActionListener,MouseListener
 {
     //finals
@@ -24,7 +25,12 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     final int BOARDHEIGHT = 70;
 
     final int CELLWIDTH = 15;
-
+    
+    //images
+    ImageIcon pauseImage= new ImageIcon("images/pause.png");
+    
+    ImageIcon playImage= new ImageIcon("images/play.png");
+    
     //board array
     String[][] gameBoard = new String[BOARDWIDTH][BOARDHEIGHT];
     String[][] pastFrame = new String[BOARDWIDTH][BOARDHEIGHT];
@@ -231,7 +237,6 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             offScreenImage = new BufferedImage(getWidth(),getHeight(),BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = (Graphics2D) offScreenImage.getGraphics();
         
-        //Graphics2D g2 = (Graphics2D) g;
         //draw cells
         for(int y = 0;y < BOARDHEIGHT;y++){
             for(int x = 0;x < BOARDWIDTH;x++){
@@ -256,7 +261,10 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
             g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 5,1,(CELLWIDTH * BOARDHEIGHT));
         }
         
+        //for the play/pause button
         
+        g2.setColor(Color.GRAY);
+        g2.drawString("Icons by Debi Alpa Nugraha and IYAHICON", 10,1200);
         g.drawImage(offScreenImage,0,0,null);
     }
 
@@ -268,7 +276,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     public void mouseReleased(MouseEvent e) {}
 
     public void mousePressed(MouseEvent e) {}
-
+make the icon picture size smaller
     // to detect mouse clicks
     public void mouseClicked(MouseEvent e) {
         int mouseX = e.getX();
@@ -319,13 +327,18 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
                 break;
             case "Play and pause":
                 playControl(true);
+                if(playing){
+                    myButton.setIcon(pauseImage);
+                }else{
+                    myButton.setIcon(playImage);
+                }
                 break;
         }
     }
 
     public void setUpWindow(){
         //make window
-        setTitle("Connect four");
+        setTitle("Game of life");
         this.getContentPane().setPreferredSize(new Dimension(BOARDWIDTH* CELLWIDTH + 100,BOARDHEIGHT * CELLWIDTH + 100));
         this.getContentPane().setLayout(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -387,9 +400,10 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
 
         myButton = new JButton();
         myButton.setText("Play and pause");
-        myButton.setBounds (430,1100,140,20);
+        myButton.setBounds (0,0,1000,1000);
         myButton.addActionListener(this);
         myButton.setFocusable(false);
+        myButton.setIcon(playImage);
         this.add(myButton);
 
         //put it onto the screen
