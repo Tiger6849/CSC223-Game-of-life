@@ -18,19 +18,26 @@ import java.io.FileNotFoundException; // to handle file reading errors
 import java.util.concurrent.TimeUnit;// for a sleep command
 import java.awt.image.BufferedImage; //for buffering
 import javax.swing.ImageIcon; // for the images on buttons
-public class GameOfLife extends JFrame implements ActionListener,MouseListener
+import javax.swing.event.*;
+public class GameOfLife extends JFrame implements ActionListener,MouseListener,ChangeListener
 {
     //finals
     final int BOARDWIDTH = 70; 
     final int BOARDHEIGHT = 70;
 
     final int CELLWIDTH = 15;
-    
-    //images
-    ImageIcon pauseImage= new ImageIcon("images/pause.png");
-    
-    ImageIcon playImage= new ImageIcon("images/play.png");
-    
+
+    //icons. the bunch of code is so that they are sized correctly.
+    ImageIcon pauseIconTemp= new ImageIcon("images/pause.png");
+    Image pauseImage = pauseIconTemp.getImage();
+    Image pauseImageTemp = pauseImage.getScaledInstance(50,50,java.awt.Image.SCALE_SMOOTH);
+    ImageIcon pauseIcon = new ImageIcon(pauseImageTemp);
+
+    ImageIcon playIconTemp= new ImageIcon("images/play.png");
+    Image playImage = playIconTemp.getImage();
+    Image playImageTemp = playImage.getScaledInstance(50,50,java.awt.Image.SCALE_SMOOTH);
+    ImageIcon playIcon = new ImageIcon(playImageTemp);
+
     //board array
     String[][] gameBoard = new String[BOARDWIDTH][BOARDHEIGHT];
     String[][] pastFrame = new String[BOARDWIDTH][BOARDHEIGHT];
@@ -43,9 +50,11 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     JMenu menu;
     JMenuItem menuItem;
     JButton myButton;
-
+    
     //variables
     boolean playing = false;
+    
+    int framesPerSecond;
     /**
      * Constructor for objects of class GameOfLife
      */
@@ -231,12 +240,13 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     //so it flickers less
     private BufferedImage offScreenImage;
     public void paint(Graphics g){
-        super.paint(g);
+        if(!playing)
+            super.paint(g);
 
         if (offScreenImage == null)
             offScreenImage = new BufferedImage(getWidth(),getHeight(),BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = (Graphics2D) offScreenImage.getGraphics();
-        
+
         //draw cells
         for(int y = 0;y < BOARDHEIGHT;y++){
             for(int x = 0;x < BOARDWIDTH;x++){
@@ -260,9 +270,9 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
         for(int y=0;y<BOARDWIDTH + 1;y++){
             g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 5,1,(CELLWIDTH * BOARDHEIGHT));
         }
-        
+finish testing doc thing
         //for the play/pause button
-        
+
         g2.setColor(Color.GRAY);
         g2.drawString("Icons by Debi Alpa Nugraha and IYAHICON", 10,1200);
         g.drawImage(offScreenImage,0,0,null);
@@ -276,7 +286,6 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener
     public void mouseReleased(MouseEvent e) {}
 
     public void mousePressed(MouseEvent e) {}
-make the icon picture size smaller
     // to detect mouse clicks
     public void mouseClicked(MouseEvent e) {
         int mouseX = e.getX();
@@ -303,12 +312,13 @@ make the icon picture size smaller
 
     //for detecting menu interactions
     public void actionPerformed(ActionEvent e){
+        System.out.println(e.getActionCommand());
         switch(e.getActionCommand()){
-            case "Move forward one frame","Next frame":
+            case"Next frame":
                 cellCalculation(1);
                 repaint();
                 break;
-            case "Move forward multiple frames","Move multiple frames":
+            case "Move multiple frames":
                 cellCalculation(Integer.parseInt(printQuestionAndCleanInput("How many frames?",2)));
                 repaint();
                 break;
@@ -325,12 +335,12 @@ make the icon picture size smaller
                 loadSave();
                 repaint();
                 break;
-            case "Play and pause":
+            case "":
                 playControl(true);
                 if(playing){
-                    myButton.setIcon(pauseImage);
+                    myButton.setIcon(pauseIcon);
                 }else{
-                    myButton.setIcon(playImage);
+                    myButton.setIcon(playIcon);
                 }
                 break;
         }
@@ -350,20 +360,7 @@ make the icon picture size smaller
         menuBar = new JMenuBar();
         this.setJMenuBar(menuBar);
 
-        //add menus to the menu bar
-        menu = new JMenu("Time control");
-        menuBar.add(menu);
-
-        menuItem = new JMenuItem("Move forward one frame");
-        menuItem.addActionListener(this);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke('1'));
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Move forward multiple frames");
-        menuItem.addActionListener(this);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke('2'));
-        menu.add(menuItem);
-
+        //add menu to the menu bar
         menu = new JMenu("Extras");
         menuBar.add(menu);
 
@@ -399,13 +396,29 @@ make the icon picture size smaller
         this.add(myButton);
 
         myButton = new JButton();
-        myButton.setText("Play and pause");
-        myButton.setBounds (0,0,1000,1000);
+        myButton.setBounds (430,1100,50,50);
         myButton.addActionListener(this);
         myButton.setFocusable(false);
-        myButton.setIcon(playImage);
+        myButton.setIcon(playIcon);
         this.add(myButton);
-
+        
+        //label for the slider
+        JLabel sliderLabel = new JLabel("Speed",JLabel.CENTER);
+        sliderLabel.setLocation(550,1085);
+        sliderLabel.setSize(100,10);
+        this.add(sliderLabel);
+        
+        //add speed slider
+        JSlider framesPerSecond = new JSlider(JSlider.HORIZONTAL,0,10,3);
+        framesPerSecond.addChangeListener(this);
+        framesPerSecond.setBounds(500,1095,200,60);
+        framesPerSecond.setPaintTrack(true);
+        framesPerSecond.setPaintTicks(true);
+        framesPerSecond.setPaintLabels(true);
+        framesPerSecond.setMajorTickSpacing(10);
+        framesPerSecond.setMinorTickSpacing(1);
+        this.add(framesPerSecond);
+        
         //put it onto the screen
         this.pack();
         this.toFront();
@@ -501,7 +514,7 @@ make the icon picture size smaller
         }else{
             while(true){
                 try{
-                    TimeUnit.MILLISECONDS.sleep(700);
+                    TimeUnit.MILLISECONDS.sleep(1000/(1+framesPerSecond));
                 }catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     System.out.println("Thread was interrupted while sleeping.");
@@ -512,6 +525,14 @@ make the icon picture size smaller
                     repaint();
                 }
             }
+        }
+        
+    }
+    
+    public void stateChanged(ChangeEvent e){
+        JSlider source = (JSlider)e.getSource();
+        if (!source.getValueIsAdjusting()) {
+            framesPerSecond = (int)source.getValue();
         }
     }
 }
