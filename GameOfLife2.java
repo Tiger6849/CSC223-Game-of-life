@@ -2,7 +2,7 @@
 /**
  * GameOfLife2 is a game based off conways game of life.
  *
- * @author Llew cahalane
+ * @author Llew Cahalane
  * 
  */
 import java.awt.event.*; // for events like mouse and keyboard stuff
@@ -22,14 +22,15 @@ import javax.swing.event.*;
 import javax.swing.JFrame;//for JFrame
 import javax.swing.SwingUtilities;// for swing utilities
 import java.awt.Component;
+import java.util.Random;//for generating random numbers
 
 public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,ChangeListener
 {
     //finals
-    final int BOARDWIDTH = 70; 
-    final int BOARDHEIGHT = 70;
+    final int BOARDWIDTH = 200; 
+    final int BOARDHEIGHT = 200;
 
-    final int CELLWIDTH = 15;
+    final int CELLWIDTH = 5;
 
     //icons. the bunch of code is so that they are sized correctly.
     ImageIcon pauseIconTemp= new ImageIcon("images/pause.png");
@@ -253,16 +254,15 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
     public void mousePressed(MouseEvent e) {}
     // to detect mouse clicks
     public void mouseClicked(MouseEvent e) {
-        System.out.println("CLIIIICK");
-        int mouseX = e.getX();
-        int mouseY = e.getY();
-
+        int mouseX = e.getX() - 8;
+        int mouseY = e.getY() - 53;
+        
         for(int y = 0;y < BOARDHEIGHT;y++){
             for(int x = 0;x < BOARDWIDTH;x++){
                 int cellX = CELLWIDTH * (x + 2);
-                int cellY = CELLWIDTH * (y + 5);
+                int cellY = CELLWIDTH * (y + 2);
                 int cellXAndWidth = CELLWIDTH * (x + 2) + CELLWIDTH;
-                int cellYAndHeight = CELLWIDTH * (y + 5) + CELLWIDTH;
+                int cellYAndHeight = CELLWIDTH * (y + 2) + CELLWIDTH;
 
                 if(mouseX > cellX && mouseX < cellXAndWidth && mouseY > cellY && mouseY < cellYAndHeight){
                     if(gameBoard[x][y].equals("=")){
@@ -274,20 +274,19 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
             }
         }
         
-        panel.repaint(0,0,1000,1000);
+        panel.repaint(0,0,1080,1080);
     }
 
     //for detecting menu interactions
     public void actionPerformed(ActionEvent e){
-        System.out.println(e.getActionCommand());
         switch(e.getActionCommand()){
                 case"Next frame":
                 cellCalculation(1);
-                panel.repaint(0,0,1000,1000);
+                panel.repaint(0,0,1080,1080);
                 break;
             case "Move multiple frames":
                 cellCalculation(Integer.parseInt(printQuestionAndCleanInput("How many frames?",2)));
-                panel.repaint(0,0,1000,1000);
+                panel.repaint(0,0,1080,1080);
                 break;
             case "Quit":
                 System.exit(0);
@@ -300,7 +299,7 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
                 break;
             case "Load save":
                 loadSave();
-                panel.repaint(0,0,1000,1000);
+                panel.repaint(0,0,1080,1080);
                 break;
             case "":
                 playControl(true);
@@ -310,6 +309,20 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
                     myButton.setIcon(playIcon);
                 }
                 break;
+            case "Random":
+                System.out.println("heklO");
+                for(int y = 0;y < BOARDHEIGHT;y++){
+                    for(int x = 0;x < BOARDWIDTH;x++){
+                        Random r = new Random();
+                        if(r.nextInt(2) == 1){
+                            gameBoard[x][y] = "#";
+                        }else{
+                            gameBoard[x][y] = "=";
+                        }
+                    }
+                }
+                panel.repaint(0,0,1080,1080);
+                break;
         }
     }
 
@@ -318,12 +331,8 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
         JFrame frame = new JFrame("Game of life");
         panel = new CustomPanel(BOARDHEIGHT,BOARDWIDTH,CELLWIDTH,gameBoard);
         
-        panel.setEnabled(false);
-        panel.setFocusable(false);
-        panel.setOpaque(false);
-        
         //detects mouse clicks
-        addMouseListener(this);
+        frame.addMouseListener(this);
 
         //make menu  bar
         JMenuBar menuBar = new JMenuBar();
@@ -363,6 +372,13 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
         myButton.addActionListener(this);
         myButton.setFocusable(false);
         frame.add(myButton);
+        
+        myButton = new JButton();
+        myButton.setText("Random");
+        myButton.setBounds (720,1100,100,20);
+        myButton.addActionListener(this);
+        myButton.setFocusable(false);
+        frame.add(myButton);
 
         myButton = new JButton();
         myButton.setBounds (430,1100,50,50);
@@ -370,6 +386,8 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
         myButton.setFocusable(false);
         myButton.setIcon(playIcon);
         frame.add(myButton);
+        
+        
 
         //label for the slider
         JLabel sliderLabel = new JLabel("Speed",JLabel.CENTER);
@@ -378,23 +396,20 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
         frame.add(sliderLabel);
 
         //add speed slider
-        JSlider framesPerSecond = new JSlider(JSlider.HORIZONTAL,0,10,3);
+        JSlider framesPerSecond = new JSlider(JSlider.HORIZONTAL,0,200,7);
         framesPerSecond.addChangeListener(this);
         framesPerSecond.setBounds(500,1095,200,60);
         framesPerSecond.setPaintTrack(true);
         framesPerSecond.setPaintTicks(true);
         framesPerSecond.setPaintLabels(true);
-        framesPerSecond.setMajorTickSpacing(10);
-        framesPerSecond.setMinorTickSpacing(1);
+        framesPerSecond.setMajorTickSpacing(50);
+        framesPerSecond.setMinorTickSpacing(5);
         frame.add(framesPerSecond);
-         
-        menuBar = new JMenuBar();
-        frame.setJMenuBar(menuBar);
         
         frame.add(panel);
 
         //put it onto the screen
-        frame.setSize(new Dimension(BOARDWIDTH* CELLWIDTH + 100,BOARDHEIGHT * CELLWIDTH + 100));
+        frame.setSize(new Dimension(BOARDWIDTH* CELLWIDTH + 100,BOARDHEIGHT * CELLWIDTH + 200));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null); // Center window on screen
         frame.setVisible(true); 
@@ -496,7 +511,7 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
 
                 if(playing){
                     cellCalculation(1);
-                    panel.repaint(0,0,1000,1000);
+                    panel.repaint(0,0,1080,1080);
                 }
             }
         }
@@ -510,4 +525,3 @@ public class GameOfLife2 extends JFrame implements ActionListener,MouseListener,
         }
     }
 }
-

@@ -15,9 +15,6 @@ public class CustomPanel extends JPanel  {
     
     //only here to get the variables
     public CustomPanel (int BOARDHEIGHT2, int BOARDWIDTH2 ,int CELLWIDTH2, String[][] gameBoard2){
-        
-        
-        
         BOARDHEIGHT = BOARDHEIGHT2;
         BOARDWIDTH = BOARDWIDTH2;
         CELLWIDTH = CELLWIDTH2;
@@ -33,17 +30,17 @@ public class CustomPanel extends JPanel  {
         //draw cells
         for(int y = 0;y < BOARDHEIGHT;y++){
             for(int x = 0;x < BOARDWIDTH;x++){
-                if(gameBoard[x][y] == "#"){
+                if(gameBoard[x][y].equals("#")){
                     g2.setColor(Color.WHITE);
-                }else if(gameBoard[x][y] == "="){
-                    g2.setColor(Color.GRAY);
+                }else if(gameBoard[x][y].equals("=")){
+                    g2.setColor(Color.BLACK);
                 }
             
                 g2.fillRect(CELLWIDTH * (x + 2),CELLWIDTH * (y + 2),CELLWIDTH,CELLWIDTH);
             }
         }
     
-        g2.setColor(Color.LIGHT_GRAY);
+        //g2.setColor(Color.LIGHT_GRAY);
         //draw horizontal grid lines
         for(int x=0;x<BOARDHEIGHT + 1;x++){
             g2.fillRect(CELLWIDTH * 2,(CELLWIDTH * x) + CELLWIDTH * 2,(CELLWIDTH * BOARDWIDTH),1);
