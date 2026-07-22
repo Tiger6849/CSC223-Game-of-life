@@ -2,7 +2,7 @@
 /**
  * GameOfLife is a game based off conways game of life.
  *
- * @author Llew cahalane
+ * @author Llew Cahalane
  * 
  */
 import java.awt.event.*; // for events like mouse and keyboard stuff
@@ -19,13 +19,18 @@ import java.util.concurrent.TimeUnit;// for a sleep command
 import java.awt.image.BufferedImage; //for buffering
 import javax.swing.ImageIcon; // for the images on buttons
 import javax.swing.event.*;
+import javax.swing.JFrame;//for JFrame
+import javax.swing.SwingUtilities;// for swing utilities
+import java.awt.Component;
+import java.util.Random;//for generating random numbers
+
 public class GameOfLife extends JFrame implements ActionListener,MouseListener,ChangeListener
 {
     //finals
-    final int BOARDWIDTH = 70; 
-    final int BOARDHEIGHT = 70;
+    final int BOARDWIDTH = 200; 
+    final int BOARDHEIGHT = 178;
 
-    final int CELLWIDTH = 15;
+    final int CELLWIDTH = 6;
 
     //icons. the bunch of code is so that they are sized correctly.
     ImageIcon pauseIconTemp= new ImageIcon("images/pause.png");
@@ -45,15 +50,18 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener,C
     //scanner for input
     Scanner keyboard = new Scanner(System.in);
 
-    //menu & button setup
+    //swing setup
     JMenuBar menuBar;
     JMenu menu;
     JMenuItem menuItem;
     JButton myButton;
+    CustomPanel panel;
+
     
+
     //variables
     boolean playing = false;
-    
+
     int framesPerSecond;
     /**
      * Constructor for objects of class GameOfLife
@@ -90,9 +98,12 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener,C
 
             //checks if you entered an integer
             for(int i = 0;i < reply.length();i++){
-                if(Character.isDigit(reply.charAt(i))){
-                    isNumber = true;
-                }
+                try{
+                    Integer.parseInt(reply);
+                    if(Character.isDigit(reply.charAt(i))){
+                        isNumber = true;
+                    }
+                }catch (NumberFormatException e){isNumber = false;}
             }
             if(questionType != 3){
                 if(isNumber){
@@ -113,7 +124,7 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener,C
                     if(questionType == 1){
                         System.out.println("Please input 1 or 2");
                     }else{
-                        System.out.println("Please input positive number");
+                        System.out.println("Please input positive whole number");
                     }
                 }
             }else{
@@ -237,48 +248,6 @@ public class GameOfLife extends JFrame implements ActionListener,MouseListener,C
         }
     }
 
-    //so it flickers less
-    private BufferedImage offScreenImage;
-    public void paint(Graphics g){
-        if(!playing)
-            super.paint(g);
-
-        if (offScreenImage == null)
-            offScreenImage = new BufferedImage(getWidth(),getHeight(),BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = (Graphics2D) offScreenImage.getGraphics();
-
-        //draw cells
-        for(int y = 0;y < BOARDHEIGHT;y++){
-            for(int x = 0;x < BOARDWIDTH;x++){
-                if(gameBoard[x][y] == "#"){
-                    g2.setColor(Color.WHITE);
-                }else if(gameBoard[x][y] == "="){
-                    g2.setColor(Color.GRAY);
-                }
-
-                g2.fillRect(CELLWIDTH * (x + 2),CELLWIDTH * (y + 5),CELLWIDTH,CELLWIDTH);
-            }
-        }
-
-        g2.setColor(Color.LIGHT_GRAY);
-        //draw horizontal grid lines
-        for(int x=0;x<BOARDHEIGHT + 1;x++){
-            g2.fillRect(CELLWIDTH * 2,(CELLWIDTH * x) + CELLWIDTH * 5,(CELLWIDTH * BOARDWIDTH),1);
-        }
-
-        //draw vertical grid lines
-        for(int y=0;y<BOARDWIDTH + 1;y++){
-            g2.fillRect((CELLWIDTH * y)+ CELLWIDTH * 2,CELLWIDTH * 5,1,(CELLWIDTH * BOARDHEIGHT));
-        }
-finish testing doc thing
-        //for the play/pause button
-
-        g2.setColor(Color.GRAY);
-        g2.drawString("Icons by Debi Alpa Nugraha and IYAHICON", 10,1200);
-        g.drawImage(offScreenImage,0,0,null);
-    }
-
-    //these are here so there arent any errors
     public void mouseExited(MouseEvent e) {}
 
     public void mouseEntered(MouseEvent e) {}
@@ -288,15 +257,15 @@ finish testing doc thing
     public void mousePressed(MouseEvent e) {}
     // to detect mouse clicks
     public void mouseClicked(MouseEvent e) {
-        int mouseX = e.getX();
-        int mouseY = e.getY();
-
+        int mouseX = e.getX() - 8;
+        int mouseY = e.getY() - 53;
+        
         for(int y = 0;y < BOARDHEIGHT;y++){
             for(int x = 0;x < BOARDWIDTH;x++){
                 int cellX = CELLWIDTH * (x + 2);
-                int cellY = CELLWIDTH * (y + 5);
+                int cellY = CELLWIDTH * (y + 2);
                 int cellXAndWidth = CELLWIDTH * (x + 2) + CELLWIDTH;
-                int cellYAndHeight = CELLWIDTH * (y + 5) + CELLWIDTH;
+                int cellYAndHeight = CELLWIDTH * (y + 2) + CELLWIDTH;
 
                 if(mouseX > cellX && mouseX < cellXAndWidth && mouseY > cellY && mouseY < cellYAndHeight){
                     if(gameBoard[x][y].equals("=")){
@@ -307,20 +276,20 @@ finish testing doc thing
                 }
             }
         }
-        repaint();
+        
+        panel.repaint(0,0,2000,1080);
     }
 
     //for detecting menu interactions
     public void actionPerformed(ActionEvent e){
-        System.out.println(e.getActionCommand());
         switch(e.getActionCommand()){
-            case"Next frame":
+                case"Next frame":
                 cellCalculation(1);
-                repaint();
+                panel.repaint(0,0,2000,1080);
                 break;
             case "Move multiple frames":
                 cellCalculation(Integer.parseInt(printQuestionAndCleanInput("How many frames?",2)));
-                repaint();
+                panel.repaint(0,0,2000,1080);
                 break;
             case "Quit":
                 System.exit(0);
@@ -328,12 +297,9 @@ finish testing doc thing
             case "Save to file":
                 writeSave();
                 break;
-            case "Create file for save":
-                createSaveFile();
-                break;
             case "Load save":
                 loadSave();
-                repaint();
+                panel.repaint(0,0,2000,1080);
                 break;
             case "":
                 playControl(true);
@@ -343,22 +309,41 @@ finish testing doc thing
                     myButton.setIcon(playIcon);
                 }
                 break;
+            case "Random":
+                for(int y = 0;y < BOARDHEIGHT;y++){
+                    for(int x = 0;x < BOARDWIDTH;x++){
+                        Random r = new Random();
+                        if(r.nextInt(2) == 1){
+                            gameBoard[x][y] = "#";
+                        }else{
+                            gameBoard[x][y] = "=";
+                        }
+                    }
+                }
+                panel.repaint(0,0,2000,1080);
+                break;
+            case "Clear":
+                for(int y = 0;y < BOARDHEIGHT;y++){
+                    for(int x = 0;x < BOARDWIDTH;x++){
+                        gameBoard[x][y] = "=";
+                    }
+                }
+                panel.repaint(0,0,2000,1080);
+                break;
         }
     }
 
     public void setUpWindow(){
-        //make window
-        setTitle("Game of life");
-        this.getContentPane().setPreferredSize(new Dimension(BOARDWIDTH* CELLWIDTH + 100,BOARDHEIGHT * CELLWIDTH + 100));
-        this.getContentPane().setLayout(null);
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        JFrame frame = new JFrame("Game of life");
+        panel = new CustomPanel(BOARDHEIGHT,BOARDWIDTH,CELLWIDTH,gameBoard);
+        
         //detects mouse clicks
-        addMouseListener(this);
+        frame.addMouseListener(this);
 
         //make menu  bar
-        menuBar = new JMenuBar();
-        this.setJMenuBar(menuBar);
+        JMenuBar menuBar = new JMenuBar();
+        frame.setJMenuBar(menuBar);
 
         //add menu to the menu bar
         menu = new JMenu("Extras");
@@ -372,10 +357,6 @@ finish testing doc thing
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Create file for save");
-        menuItem.addActionListener(this);
-        menu.add(menuItem);
-
         menuItem = new JMenuItem("Load save");
         menuItem.addActionListener(this);
         menu.add(menuItem);
@@ -386,64 +367,64 @@ finish testing doc thing
         myButton.setBounds (100,1100,120,20);
         myButton.addActionListener(this);
         myButton.setFocusable(false);
-        this.add(myButton);
+        frame.add(myButton);
 
         myButton = new JButton();
         myButton.setText("Move multiple frames");
         myButton.setBounds (240,1100,170,20);
         myButton.addActionListener(this);
         myButton.setFocusable(false);
-        this.add(myButton);
+        frame.add(myButton);
+        
+        myButton = new JButton();
+        myButton.setText("Random");
+        myButton.setBounds (720,1100,100,20);
+        myButton.addActionListener(this);
+        myButton.setFocusable(false);
+        frame.add(myButton);
+        
+        myButton = new JButton();
+        myButton.setText("Clear");
+        myButton.setBounds (840,1100,100,20);
+        myButton.addActionListener(this);
+        myButton.setFocusable(false);
+        frame.add(myButton);
 
         myButton = new JButton();
         myButton.setBounds (430,1100,50,50);
         myButton.addActionListener(this);
         myButton.setFocusable(false);
         myButton.setIcon(playIcon);
-        this.add(myButton);
+        frame.add(myButton);
         
+        
+
         //label for the slider
         JLabel sliderLabel = new JLabel("Speed",JLabel.CENTER);
         sliderLabel.setLocation(550,1085);
         sliderLabel.setSize(100,10);
-        this.add(sliderLabel);
-        
+        frame.add(sliderLabel);
+
         //add speed slider
-        JSlider framesPerSecond = new JSlider(JSlider.HORIZONTAL,0,10,3);
+        JSlider framesPerSecond = new JSlider(JSlider.HORIZONTAL,0,200,7);
         framesPerSecond.addChangeListener(this);
         framesPerSecond.setBounds(500,1095,200,60);
         framesPerSecond.setPaintTrack(true);
         framesPerSecond.setPaintTicks(true);
         framesPerSecond.setPaintLabels(true);
-        framesPerSecond.setMajorTickSpacing(10);
-        framesPerSecond.setMinorTickSpacing(1);
-        this.add(framesPerSecond);
+        framesPerSecond.setMajorTickSpacing(50);
+        framesPerSecond.setMinorTickSpacing(5);
+        frame.add(framesPerSecond);
         
+        frame.add(panel);
+
         //put it onto the screen
-        this.pack();
-        this.toFront();
-        this.setVisible(true); 
-
+        frame.setSize(new Dimension(BOARDWIDTH* CELLWIDTH + 100,BOARDHEIGHT * CELLWIDTH + 200));
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null); // Center window on screen
+        frame.setVisible(true); 
     }
 
-    public void createSaveFile(){
-        //makes a file. the try is to catch if there is an error
-        try {
-            //creates the file object
-            File myObj = new File("GameOfLifeSave.txt");
-            //checks if the file already exists
-            if(myObj.createNewFile()) {
-                System.out.println("File saved");
-            } else{
-                System.out.println("File already exists");
-            }
-            //catches the errors
-        } catch (IOException e) {
-            System.out.println("An error occurred. (IOException)");
-            e.printStackTrace(); //print error details
-        }
-
-    }
     //you were doing save stuff. make sure to update testing doc
     public void writeSave() {
         String saveString = "";
@@ -454,7 +435,7 @@ finish testing doc thing
                 }else if(gameBoard[x][y].equals("=")){
                     saveString += "0";
                 }
-                if(y == BOARDWIDTH-1){
+                if(y == BOARDHEIGHT-1){
                     saveString += ";";
                 }
             }
@@ -482,21 +463,19 @@ finish testing doc thing
                     switch(data.charAt(i)){
                         case '1':
                             gameBoard[x][y] = "#";
-                            System.out.println(data.charAt(i)+" "+data.length());;
                             y++;
                             break;
                         case '0':
                             gameBoard[x][y] = "=";
-                            System.out.println(data.charAt(i)+" "+data.length());
                             y++;
                             break;
                         case ';':
                             x++;
                             y = 0;
-                            System.out.println(data.charAt(i)+" "+data.length());
                     }
                 }
             }
+            System.out.println("File loaded");
         }catch (FileNotFoundException e){
             System.out.println("An error occured (FileNotFoundException)");
             e.printStackTrace();
@@ -522,13 +501,13 @@ finish testing doc thing
 
                 if(playing){
                     cellCalculation(1);
-                    repaint();
+                    panel.repaint(0,0,2000,1080);
                 }
             }
         }
-        
+
     }
-    
+
     public void stateChanged(ChangeEvent e){
         JSlider source = (JSlider)e.getSource();
         if (!source.getValueIsAdjusting()) {
@@ -536,4 +515,3 @@ finish testing doc thing
         }
     }
 }
-
